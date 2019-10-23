@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt; plt.ion()
-import scipy.signal as sgn
+import scipy.signal as signal
 
 q1 = True
 q2 = True
@@ -8,16 +8,16 @@ PB_filt = True
 PA_filt = False
 Notch_filt = False
 
-signal = np.loadtxt('signal.txt')
+mysignal = np.loadtxt('../data/signal.txt')
 fs = 500  # Hz
 dt = 1./fs # seconds
-t = np.linspace(0,dt*signal.shape[0],signal.shape[0],endpoint=False)
-N = len(signal)
+t = np.linspace(0,dt*mysignal.shape[0],mysignal.shape[0],endpoint=False)
+N = len(mysignal)
 
 
 # Questão 1
-sig_fft = np.fft.rfft(signal)
-f_dimensionless = np.fft.rfftfreq(len(signal))
+sig_fft = np.fft.rfft(mysignal)
+f_dimensionless = np.fft.rfftfreq(len(mysignal))
 T = dt*N
 df = 1./T
 fhz_nf = f_dimensionless*df*N
@@ -27,10 +27,10 @@ fig1 = plt.figure(figsize=(14,4.5))
 plt.title('Q1 (a)')
 plt.xlabel('tempo [s]')
 plt.ylabel('sinal ECG não filtrado [mV]')
-plt.plot(t,signal)
+plt.plot(t,mysignal)
 plt.grid(b=True,which='both')
 plt.tight_layout()
-plt.savefig('Q1_a_sinal_nfilt.png')
+plt.savefig('../images/Q1_a_sinal_nfilt.png')
 
 fig2 = plt.figure(figsize=(14,4.5))
 plt.title('Q1 (b)')
@@ -41,7 +41,7 @@ plt.plot(fhz_nf,sig_fft)
 plt.tight_layout()
 xlim_fft = plt.xlim()
 ylim_fft = plt.ylim()
-plt.savefig('Q1_b_espectro_nfilt.png')
+plt.savefig('../images/Q1_b_espectro_nfilt.png')
 
 # Questão 2
 # (a)
@@ -53,13 +53,13 @@ if PB_filt:
     #wstop = fstop*2*np.pi
     #wny = fny*2*np.pi
     
-    lp_ord, lp_wn = sgn.buttord(lp_fpass/fny,lp_fstop/fny,3,40)
+    lp_ord, lp_wn = signal.buttord(lp_fpass/fny,lp_fstop/fny,3,40)
     
-    lp_b, lp_a = sgn.butter(lp_ord, lp_wn, 'low')
-    #lp_b, lp_a = sgn.butter(8, lp_fpass/fny, 'low')
-    lp_w, lp_h = sgn.freqz(lp_b, lp_a, worN=len(fhz_nf),fs=fs*2*np.pi)
+    lp_b, lp_a = signal.butter(lp_ord, lp_wn, 'low')
+    #lp_b, lp_a = signal.butter(8, lp_fpass/fny, 'low')
+    lp_w, lp_h = signal.freqz(lp_b, lp_a, worN=len(fhz_nf),fs=fs*2*np.pi)
     
-    sig_lp = sgn.lfilter(lp_b,lp_a,signal)
+    sig_lp = signal.lfilter(lp_b,lp_a,mysignal)
     
     sig_fft_lp = np.fft.rfft(sig_lp)
     f_dimensionless_lp = np.fft.rfftfreq(len(sig_lp))
@@ -75,7 +75,7 @@ if PB_filt:
         plt.plot(t,sig_lp)
         plt.grid(b=True,which='both')
         plt.tight_layout()
-        plt.savefig('Q2_a_sinal_filt_LP.png')
+        plt.savefig('../images/Q2_a_sinal_filt_LP.png')
         
         fig4 = plt.figure(figsize=(14,4.5))
         plt.title('Q2 (a)')
@@ -86,7 +86,7 @@ if PB_filt:
         #plt.grid(b=True,which='both')
         plt.plot(fhz_lp,sig_fft_lp)
         plt.tight_layout()
-        plt.savefig('Q2_b_espectro_filt_PB.png')
+        plt.savefig('../images/Q2_b_espectro_filt_PB.png')
     
         fig5 = plt.figure()
         plt.plot(lp_w/(2*np.pi), 20 * np.log10(abs(lp_h)))
@@ -97,7 +97,7 @@ if PB_filt:
         plt.margins(0, 0.1)
         plt.grid(which='both', axis='both')
         plt.axvline(lp_fpass, color='green') # cutoff frequency
-        plt.savefig('Q2_a3_PB_respfreq.png')
+        plt.savefig('../images/Q2_a3_PB_respfreq.png')
 
 # (b)
 if PA_filt:
@@ -108,11 +108,11 @@ if PA_filt:
     #wstop = fstop*2*np.pi
     #wny = fny*2*np.pi
     
-    hp_ord, hp_wn = sgn.buttord(hp_fpass/fny,hp_fstop/fny,3,40)
+    hp_ord, hp_wn = signal.buttord(hp_fpass/fny,hp_fstop/fny,3,40)
     
-    #b, a = sgn.butter(filt_ord, filt_wn, 'low')
-    hp_b, hp_a = sgn.butter(4, hp_fpass/fny, 'highpass')
-    hp_w, hp_h = sgn.freqz(hp_b, hp_a, worN=len(fhz_lp),fs=fs*2*np.pi)
+    #b, a = signal.butter(filt_ord, filt_wn, 'low')
+    hp_b, hp_a = signal.butter(4, hp_fpass/fny, 'highpass')
+    hp_w, hp_h = signal.freqz(hp_b, hp_a, worN=len(fhz_lp),fs=fs*2*np.pi)
     
     fig6 = plt.figure()
     plt.plot(hp_w/(2*np.pi), 20 * np.log10(abs(hp_h)))
@@ -124,7 +124,7 @@ if PA_filt:
     plt.grid(which='both', axis='both')
     plt.axvline(hp_fpass, color='green') # cutoff frequency
     
-    sig_lphp= sgn.lfilter(hp_b,hp_a,sig_lp)
+    sig_lphp= signal.lfilter(hp_b,hp_a,sig_lp)
     
     sig_fft_lphp = np.fft.rfft(sig_lphp)
     f_dimensionless_lphp = np.fft.rfftfreq(len(sig_lphp))
@@ -140,7 +140,7 @@ if PA_filt:
         plt.plot(t,sig_lphp)
         plt.grid(b=True,which='both')
         plt.tight_layout()
-        plt.savefig('Q2_b_sinal_filt_PBPA.png')
+        plt.savefig('../images/Q2_b_sinal_filt_PBPA.png')
         
         fig8 = plt.figure(figsize=(14,4.5))
         plt.title('Q2 (b)')
@@ -148,4 +148,24 @@ if PA_filt:
         plt.ylabel('FFT sinal filtrado PB + PA')
         plt.plot(fhz_lphp,sig_fft_lphp)
         plt.tight_layout()
-        plt.savefig('Q2_b_espectro_filt_PBPA.png')
+        plt.savefig('../images/Q2_b_espectro_filt_PBPA.png')
+
+plt.figure()
+plt.subplot(2,1,1)
+plt.xlabel('Tempo [s]')
+plt.ylabel('Sinal ECG [mV]')
+plt.xlim((0,2))
+plt.ylim((-0.3,1))
+plt.plot(t,mysignal,label='Original')
+plt.legend()
+
+plt.subplot(2,1,2)
+plt.xlabel('Tempo [s]')
+plt.ylabel('Sinal ECG [mV]')
+plt.xlim((0,2))
+plt.ylim((-0.3,1))
+plt.plot(t,sig_lp,label='Filtrado (PB)')
+plt.legend()
+
+plt.savefig('../images/Q2_comparativo_orig_pb.png')
+
