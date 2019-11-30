@@ -17,7 +17,10 @@ from scipy.io import loadmat
 import numpy as np
 import matplotlib.pyplot as plt;plt.ion()
 
+print('\nPrimeira tarefa')
+
 # (a)
+print('\n(a)')
 
 # Carregar o arquivo
 data = loadmat('../data/tc2ex1.mat')
@@ -44,6 +47,7 @@ print('Neurônios sorteados: ',[n for n in neurons_id])
 print('Número de spikes: ',[n for n in num_spikes])
 
 # (b)
+print('\n(b)')
 
 # Remover o transitório, força e tempo para tempo >= 1000 ms
 
@@ -52,6 +56,7 @@ time_est = time[estac_idx]
 force_est = force[estac_idx]
 
 # (i) e (ii)
+print('i e ii)')
 force_avg = np.mean(force_est)
 force_std = np.std(force_est)
 force_cv = force_std/force_avg
@@ -61,6 +66,7 @@ print(u'    Desvio-padrão: %.3f N'%force_std)
 print(u'    CV: %.3f %%'%(100*force_cv))
 
 # (iii) e (iv)
+print('\niii e iv)')
 spikes_nrns = np.array([np.array([spk[0] for spk in spikes[spikes[:,1]==nrn] if spk[0]>=1000]) for nrn in neurons_id])
 isis = np.array([np.diff(spk) for spk in spikes_nrns])
 isis_avg = np.array([np.mean(isis_n) for isis_n in isis])
