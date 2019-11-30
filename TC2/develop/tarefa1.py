@@ -14,7 +14,7 @@ Heitor Sanchez Fernandes - IA753
 """
 
 from scipy.io import loadmat
-import numpy as np
+import numpy as np; np.set_printoptions(precision=3)
 import matplotlib.pyplot as plt;plt.ion()
 
 print('\nPrimeira tarefa')
@@ -25,11 +25,13 @@ print('\n(a)')
 # Carregar o arquivo
 data = loadmat('../data/tc2ex1.mat')
 
-print("Elementos do arquivo tc2ex1.mat: ",[key for key in data.keys()])
+print("Elementos do arquivo tc2ex1.mat: ")
+print([key for key in data.keys()])
 
 force = data['force']
 spikes_all = data['spikes']
 time = data['time']
+t = time
 
 # Selecionar os índices menores que 100
 neurons_id_all = np.array(np.unique(spikes_all[:,1]),dtype=int)
@@ -43,8 +45,10 @@ good_neurons_id = np.array([i for i in neurons_id_100 if len(spikes_all[spikes_a
 neurons_id = np.random.choice(good_neurons_id,10,replace=False)
 spikes = np.array([spk for spk in spikes_all if int(spk[1]) in neurons_id])
 num_spikes = np.array([len(spikes[spikes[:,1]==i]) for i in neurons_id])
-print('Neurônios sorteados: ',[n for n in neurons_id])
-print('Número de spikes: ',[n for n in num_spikes])
+print(u'Neurônios sorteados:')
+print([n for n in neurons_id])
+print(u'Número de spikes:')
+print([n for n in num_spikes])
 
 # (b)
 print('\n(b)')
@@ -56,7 +60,7 @@ time_est = time[estac_idx]
 force_est = force[estac_idx]
 
 # (i) e (ii)
-print('i e ii)')
+print('i) e ii)')
 force_avg = np.mean(force_est)
 force_std = np.std(force_est)
 force_cv = force_std/force_avg
@@ -66,7 +70,8 @@ print(u'    Desvio-padrão: %.3f N'%force_std)
 print(u'    CV: %.3f %%'%(100*force_cv))
 
 # (iii) e (iv)
-print('\niii e iv)')
+print('\niii) e iv)')
+# Remover os spikes que ocorrem durante o transitorio
 spikes_nrns = np.array([np.array([spk[0] for spk in spikes[spikes[:,1]==nrn] if spk[0]>=1000]) for nrn in neurons_id])
 isis = np.array([np.diff(spk) for spk in spikes_nrns])
 isis_avg = np.array([np.mean(isis_n) for isis_n in isis])
@@ -78,4 +83,44 @@ print(u'    Desvio-padrão: %.3f ms'%isis_std[0])
 print(u'    CV: %.3f %%'%(100*isis_cv[0]))
 
 # (v) coeficientes de assimetria e curtose dos isis
+print('v)')
+from scipy.stats import skew,kurtosis
+isis_skew = np.array([skew(z) for z in isis])
+isis_kurt = np.array([kurtosis(z) for z in isis])
+print(u'Coef. Assimetria:')
+print(isis_skew)
+print(u'Curtose:')
+print(isis_kurt)
+
 # (vi) histogramas dos isis
+print('vi) Histogramas')
+from math import ceil
+loc = 0
+columns = 5.
+#fig = plt.figure(figsize=(8,8))
+fig = plt.figure(figsize=(11,7))
+for n,neuron in enumerate(neurons_id):
+    #if key=='units' or key=='graph_names':
+    #    continue
+    loc +=1
+    plt.subplot(ceil(len(neurons_id)/(1.*columns)),columns,loc)
+    plt.xlabel('ISIs [ms]')
+    plt.ylabel(u'Ocorrências')
+    #plt.title(neurons_id[loc-1],loc='left')
+    plt.title(u'ID: %d, C.Assim.: %.2f'%(neurons_id[loc-1],isis_skew[n]),loc='left')
+    #plt.plot(paramplot,'-',color='0.7')
+    plt.hist(isis[n],bins=20) #,label='Coef. Assim: %.2f'%isis_skew[n])
+    #plt.legend()
+#plt.tight_layout()
+
+# (c) Estimativa de Frequência instantânea
+print('\n(c)')
+
+dt = t[1]
+impulses = np.array([1./dt if instant in spikes_nrns[0] else 0 for instant in t])
+
+w =  1200.
+window = np.ones(int(w))/w
+
+ifreq = np.convolve(window,impulses)
+
