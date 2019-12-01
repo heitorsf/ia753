@@ -16,6 +16,9 @@ Heitor Sanchez Fernandes - IA753
 from scipy.io import loadmat
 import numpy as np; np.set_printoptions(precision=3)
 import matplotlib.pyplot as plt;plt.ion()
+import sys
+
+#myneuron = int(sys.argv[1])
 
 print('\nPrimeira tarefa')
 
@@ -41,8 +44,10 @@ neurons_id_100 = neurons_id_all[neurons_id_all<100]
 good_neurons_id = np.array([i for i in neurons_id_100 if len(spikes_all[spikes_all[:,1]==i])>50])
 
 # Sortear 10 neurônios
+N = 10
 #neurons_id = set(np.random.choice(good_neurons_id,10,replace=False))
-neurons_id = np.random.choice(good_neurons_id,10,replace=False)
+np.random.seed(1)
+neurons_id = np.random.choice(good_neurons_id,N,replace=False)
 spikes = np.array([spk for spk in spikes_all if int(spk[1]) in neurons_id])
 num_spikes = np.array([len(spikes[spikes[:,1]==i]) for i in neurons_id])
 print(u'Neurônios sorteados:')
@@ -98,7 +103,7 @@ from math import ceil
 loc = 0
 columns = 5.
 #fig = plt.figure(figsize=(8,8))
-fig = plt.figure(figsize=(11,7))
+######fig = plt.figure(figsize=(11,7))
 for n,neuron in enumerate(neurons_id):
     #if key=='units' or key=='graph_names':
     #    continue
@@ -109,7 +114,7 @@ for n,neuron in enumerate(neurons_id):
     #plt.title(neurons_id[loc-1],loc='left')
     plt.title(u'ID: %d, C.Assim.: %.2f'%(neurons_id[loc-1],isis_skew[n]),loc='left')
     #plt.plot(paramplot,'-',color='0.7')
-    plt.hist(isis[n],bins=20) #,label='Coef. Assim: %.2f'%isis_skew[n])
+    ###########plt.hist(isis[n],bins=20) #,label='Coef. Assim: %.2f'%isis_skew[n])
     #plt.legend()
 #plt.tight_layout()
 
@@ -117,10 +122,16 @@ for n,neuron in enumerate(neurons_id):
 print('\n(c)')
 
 dt = t[1]
-impulses = np.array([1./dt if instant in spikes_nrns[0] else 0 for instant in t])
+impulses = np.array([[1./dt if instant in spikes_nrns[n] else 0 for instant in t] for n in range(N)])
 
-w =  1200.
-window = np.ones(int(w))/w
-
-ifreq = np.convolve(window,impulses)
+window = np.hanning(500/dt)
+W = len(window)
+cc = []
+for n,neuron in enumerate(neurons_id):
+    I = len(impulses[n])
+    C = I
+    cc.append(np.fft.ifft(np.fft.fft(impulses[n], C)*np.fft.fft(window, C)))
+    #plt.plot(
+#ifreq = np.convolve(window,impulses[myneuron])
+#np.savetxt('hann_convolved_'+str(myneuron)+'.txt',ifreq)
 
