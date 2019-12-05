@@ -35,6 +35,7 @@ force = data['force']
 spikes_all = data['spikes']
 time = data['time']
 t = time
+t.shape = (max(t.shape),)
 
 # Selecionar os índices menores que 100
 neurons_id_all = np.array(np.unique(spikes_all[:,1]),dtype=int)
@@ -103,7 +104,7 @@ from math import ceil
 loc = 0
 columns = 5.
 #fig = plt.figure(figsize=(8,8))
-######fig = plt.figure(figsize=(11,7))
+fig = plt.figure(figsize=(11,7))
 for n,neuron in enumerate(neurons_id):
     #if key=='units' or key=='graph_names':
     #    continue
@@ -114,22 +115,25 @@ for n,neuron in enumerate(neurons_id):
     #plt.title(neurons_id[loc-1],loc='left')
     plt.title(u'ID: %d, C.Assim.: %.2f'%(neurons_id[loc-1],isis_skew[n]),loc='left')
     #plt.plot(paramplot,'-',color='0.7')
-    ###########plt.hist(isis[n],bins=20) #,label='Coef. Assim: %.2f'%isis_skew[n])
+    plt.hist(isis[n],bins=20) #,label='Coef. Assim: %.2f'%isis_skew[n])
     #plt.legend()
 #plt.tight_layout()
 
 # (c) Estimativa de Frequência instantânea
 print('\n(c)')
 
+# Criar vetores de zeros com 1/dt nos instantes dos impulsos
 dt = t[1]
-impulses = np.array([[1./dt if instant in spikes_nrns[n] else 0 for instant in t] for n in range(N)])
-
+impulses = np.zeros((10,len(t)))
+for s,spkt in enumerate(spikes_nrns):
+    for spk in spkt:
+        impulses[s][t==spk] = 1./dt
 window = np.hanning(500/dt)
 W = len(window)
 cc = []
 for n,neuron in enumerate(neurons_id):
     I = len(impulses[n])
-    C = I
+    C = I+W-1
     cc.append(np.fft.ifft(np.fft.fft(impulses[n], C)*np.fft.fft(window, C)))
     #plt.plot(
 #ifreq = np.convolve(window,impulses[myneuron])
