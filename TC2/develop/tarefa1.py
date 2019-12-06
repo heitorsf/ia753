@@ -17,6 +17,7 @@ from scipy.io import loadmat
 import numpy as np; np.set_printoptions(precision=3)
 import matplotlib.pyplot as plt;plt.ion()
 import sys
+plt.rc('font',size=12)
 
 #myneuron = int(sys.argv[1])
 
@@ -34,6 +35,7 @@ print([key for key in data.keys()])
 force = data['force']
 spikes_all = data['spikes']
 time = data['time']
+force.shape = (max(force.shape),)
 t = time
 t.shape = (max(t.shape),)
 
@@ -78,8 +80,10 @@ print(u'    CV: %.3f %%'%(100*force_cv))
 # (iii) e (iv)
 print('\niii) e iv)')
 # Remover os spikes que ocorrem durante o transitorio
-spikes_nrns = np.array([np.array([spk[0] for spk in spikes[spikes[:,1]==nrn] if spk[0]>=1000]) for nrn in neurons_id])
-isis = np.array([np.diff(spk) for spk in spikes_nrns])
+spikes_est = np.array([np.array([spk[0] for spk in spikes[spikes[:,1]==nrn] if spk[0]>=1000]) for nrn in neurons_id])
+spikes_line = spikes
+spikes = np.array([np.array([spk[0] for spk in spikes[spikes[:,1]==nrn]]) for nrn in neurons_id])
+isis = np.array([np.diff(spk) for spk in spikes_est])
 isis_avg = np.array([np.mean(isis_n) for isis_n in isis])
 isis_std = np.array([np.std(isis_n) for isis_n in isis])
 isis_cv = isis_std/isis_avg
@@ -102,9 +106,9 @@ print(isis_kurt)
 print('vi) Histogramas')
 from math import ceil
 loc = 0
-columns = 5.
+columns = 2.
 #fig = plt.figure(figsize=(8,8))
-fig = plt.figure(figsize=(11,7))
+fig = plt.figure(figsize=(8.77,9.45))
 for n,neuron in enumerate(neurons_id):
     #if key=='units' or key=='graph_names':
     #    continue
@@ -113,29 +117,87 @@ for n,neuron in enumerate(neurons_id):
     plt.xlabel('ISIs [ms]')
     plt.ylabel(u'Ocorrências')
     #plt.title(neurons_id[loc-1],loc='left')
-    plt.title(u'ID: %d, C.Assim.: %.2f'%(neurons_id[loc-1],isis_skew[n]),loc='left')
+    #plt.title(u'ID: %d, C.Assim.: %.2f'%(neurons_id[loc-1],isis_skew[n]),loc='left')
     #plt.plot(paramplot,'-',color='0.7')
-    plt.hist(isis[n],bins=20) #,label='Coef. Assim: %.2f'%isis_skew[n])
-    #plt.legend()
-#plt.tight_layout()
-
+    #plt.hist(isis[n],bins=20,label=u'ID: %d, C.Assim.: %.2f'%(neurons_id[loc-1],isis_skew[n]))
+    plt.hist(isis[n],bins=20,label=u'Neurônio: %d'%(neurons_id[loc-1]))
+    plt.legend(loc='upleft',fontsize=10)
+plt.tight_layout()
+plt.savefig('../images/histogramas.png')
 # (c) Estimativa de Frequência instantânea
 print('\n(c)')
 
 # Criar vetores de zeros com 1/dt nos instantes dos impulsos
 dt = t[1]
 impulses = np.zeros((10,len(t)))
-for s,spkt in enumerate(spikes_nrns):
+for s,spkt in enumerate(spikes):
     for spk in spkt:
         impulses[s][t==spk] = 1./dt
 window = np.hanning(500/dt)
+window = window/np.trapz(window)
+#w = 500/dt
+#window = np.ones(int(w))/w
+
 W = len(window)
-cc = []
+ifreq_fft = []
+ifreq_list = []
+plt.figure()
 for n,neuron in enumerate(neurons_id):
     I = len(impulses[n])
     C = I+W-1
-    cc.append(np.fft.ifft(np.fft.fft(impulses[n], C)*np.fft.fft(window, C)))
-    #plt.plot(
-#ifreq = np.convolve(window,impulses[myneuron])
+    #ifreq_fft.append(np.fft.ifft(np.fft.fft(impulses[n], C)*np.fft.fft(window, C)))
+    ifreq_list.append(np.convolve(window,impulses[n],mode='same')*1000)
+    plt.title(u'Frequências instantâneas estimadas')
+    plt.xlabel('t [ms]')
+    plt.ylabel(r'$\hat{f} (t)$ [Hz]')
+    plt.ylim((0,18))
+    plt.plot(t,ifreq_list[n])
+plt.savefig('../images/inst_freqs.png')
+ifreq = np.array(ifreq_list)
+#ifreq = np.array(ifreq_fft)
 #np.savetxt('hann_convolved_'+str(myneuron)+'.txt',ifreq)
 
+# (d) Correlacao cruzada
+print('\n(d)')
+from scipy.signal import correlate,detrend
+
+estac_idx2 = (t>=800)&(t<9500)
+t_est = t[estac_idx2]
+force_est = force[estac_idx2]
+force_zeromean = force_est - force_est.mean()
+force_detrend = detrend(force_zeromean)
+ifreq_est = ifreq[:,estac_idx2]
+ifreq_zeromean = (ifreq_est.transpose()-ifreq_est.mean(axis=1)).transpose()
+ifreq_detrend = np.array([detrend(f) for f in ifreq_zeromean])
+xcorr_force_list = []
+for i in range(min(ifreq_detrend.shape)):
+    xcorr_force_list.append(correlate(force_detrend,ifreq_detrend[i],mode='same')/len(ifreq_detrend[i]))
+    #xcorr_force_list.append(correlate(force_detrend,ifreq_detrend[i],mode='same'))
+xcorr_force = np.array(xcorr_force_list)
+plt.figure()
+plt.title(u'Correlação cruzada: Força e Frequências')
+plt.xlabel('Lag [ms]')
+plt.ylabel(r'$R_{Force,Freq}}$')
+for i in range(10):
+    plt.plot(t_est-t_est.min()-(t_est.max()-t_est.min())/2.,xcorr_force[i])
+plt.savefig('../images/corr_force-freqs.png')
+autocorr_force = correlate(force,force,mode='same')
+plt.figure()
+plt.title(u'Correlação cruzada: pares de frequências')
+plt.xlabel('Lag [ms]')
+plt.ylabel(r'$R_{f_i f_j}$',fontsize=20)
+freq_xc = []
+freq_id = []
+for i in range(N-1):
+    for j in range(i+1,N):
+        freq_xc.append(correlate(ifreq_detrend[i],ifreq_detrend[j],mode='same')/len(ifreq_detrend[i]))
+        #freq_xc.append(correlate(ifreq_detrend[i],ifreq_detrend[j],mode='same'))
+        freq_id.append((i,j))
+        print(i,j)
+        plt.plot(t_est-t_est.min()-(t_est.max()-t_est.min())/2.,freq_xc[-1],alpha=0.6)
+freqxc = np.array(freq_xc)
+freqxc_mean = freqxc.sum(axis=0)/N
+
+plt.plot(t_est-t_est.min()-(t_est.max()-t_est.min())/2.,freqxc_mean,'k',linewidth=2)
+plt.tight_layout()
+plt.savefig('../images/corr-freq-freq.png')
