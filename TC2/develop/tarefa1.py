@@ -201,3 +201,6 @@ freqxc_mean = freqxc.sum(axis=0)/N
 plt.plot(t_est-t_est.min()-(t_est.max()-t_est.min())/2.,freqxc_mean,'k',linewidth=2)
 plt.tight_layout()
 plt.savefig('../images/corr-freq-freq.png')
+
+for i in range(N):
+    print('%d & %.2f & %.2f & %.2f & %.2f & %.2f \\\\'%(neurons_id[i],isis_avg[i],isis_std[i],isis_cv[i],isis_skew[i],isis_kurt[i]))
