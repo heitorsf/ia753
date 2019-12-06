@@ -203,4 +203,4 @@ plt.tight_layout()
 plt.savefig('../images/corr-freq-freq.png')
 
 for i in range(N):
-    print('%d & %.2f & %.2f & %.2f & %.2f & %.2f \\\\'%(neurons_id[i],isis_avg[i],isis_std[i],isis_cv[i],isis_skew[i],isis_kurt[i]))
+    print('%d & %.2f & %.2f & %.2f & %.2f & %.2f \\\\'%(neurons_id[i],isis_avg[i],isis_std[i],isis_cv[i]*100,isis_skew[i],isis_kurt[i]))
