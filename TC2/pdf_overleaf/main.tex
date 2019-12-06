@@ -8,7 +8,7 @@
 %%%% Edit These for yourself
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand\course{IA753}
-\newcommand\hwnumber{1}
+\newcommand\hwnumber{2}
 \newcommand\userID{Heitor S. Fernandes - RA: 074096}
 
 \begin{document}
@@ -16,9 +16,10 @@
 
 \centerline{\text{ Linguagem utilizada: Python }}
 
-\section*{Questão 1. Análise espectral do ECG}
+\section*{Tarefa 1.}
 \begin{enumerate}[label=(\alph*)]  %,leftmargin=!,labelindent=5pt]
     \item O sinal foi carregado a partir do arquivo \emph{signal.txt}. A frequência de amostragem ${f_s = 500 Hz}$ foi utilizada para calcular o tamanho do passo temporal: ${dt = 1/f_s = 0.002}$ segundos . A partir de ${dt}$ e do número de amostras ${N = 1000}$, foi criado um vetor tempo, indo de 0.000 a 19.998 segundos. O sinal no tempo pode ser visto na figura \ref{fig:1}, abaixo.
+    
         \begin{figure}[H]
             \centering
             \includegraphics[width=15cm]{TC1/images/Q1_a_sinal_nfilt.png}
@@ -41,9 +42,12 @@
     \item
     O espectro possui componentes próximas a 50Hz, possivelmente devido à interferência da rede elétrica do local. São observadas, também, componentes em baixas frequências que podem estar relacionadas à respiração ou outros movimentos do indivíduo durante a aquisição do sinal e componentes em alta frequência, que podem estar relacionadas à detecção de sinais de EMG e ruídos causados pelos fios e pela interface entre a pele e os eletrodos.
     
+    \item
+    
+    
 \end{enumerate}
 
-\section*{Questão 2. Filtragem digital}
+\section*{Tarefa 2}
 Para criar os filtros foram utilizadas funções da biblioteca \lstinline{scipy.signal}.
 \begin{enumerate}[label=(\alph*)]  %,leftmargin=!,labelindent=5pt]
     \item Filtro passa-baixas.
