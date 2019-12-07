@@ -94,7 +94,7 @@ axs2[1].set_ylim((-220,10))
 axs2[1].grid(which='both')
 axs2[1].yaxis.set_major_formatter(StrMethodFormatter(r'{x:.0f}$\degree$'))
 
-
+plt.legend()
 plt.tight_layout()
 plt.savefig('../images/bodec.png')
 
