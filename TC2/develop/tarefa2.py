@@ -75,14 +75,25 @@ wn = 2 #Hz
 w = 2*np.pi*f
 Hwn = 4./(-np.power(w,2) + (0+4j)*w + 4)
 
-plt.figure()
-plt.semilogx(f,np.rad2deg(np.unwrap(np.angle(Hwn))),label='Calculado com wn')
-plt.semilogx(f,np.rad2deg(np.unwrap(np.angle(H))),label='Estimado')
-plt.xlabel(u'Frequências amostradas [Hz]')
-plt.ylabel(r'$\angle{H}(jw)$') # Resposta em frequência estimada')
-plt.xlim(xmax=100)
-plt.ylim((-220,10))
-plt.grid(which='both')
+fig2,axs2 = plt.subplots(2,1)
+#plt.xlabel(u'Frequências amostradas [Hz]')
+axs2[0].semilogx(f,20*np.log10(np.abs(Hwn)),label=r'Calculado com \omega_n')
+axs2[0].semilogx(f,20*np.log10(np.abs(H)),label='Estimado')
+axs2[0].set_ylabel(r'$|H(jw)|$ [dB]') # Resposta em frequência estimada')
+axs2[0].set_xlim(xmax=100)
+axs2[0].set_ylim(ymin=-75)
+axs2[0].grid(which='both')
+
+#axs2[1].semilogx(f,np.angle(H,deg=True),'.-')
+axs2[1].semilogx(f,np.rad2deg(np.unwrap(np.angle(Hwn))),label=r'Calculado com \omega_n')
+axs2[1].semilogx(f,np.rad2deg(np.unwrap(np.angle(H))),label='Estimado')
+axs2[1].set_xlabel(u'Frequências amostradas [Hz]')
+axs2[1].set_ylabel(r'$\angle{H}(jw)$') # Resposta em frequência estimada')
+axs2[1].set_xlim(xmax=100)
+axs2[1].set_ylim((-220,10))
+axs2[1].grid(which='both')
+axs2[1].yaxis.set_major_formatter(StrMethodFormatter(r'{x:.0f}$\degree$'))
+
 
 plt.tight_layout()
 plt.savefig('../images/bodec.png')
