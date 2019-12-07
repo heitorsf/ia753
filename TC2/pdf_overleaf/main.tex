@@ -3,6 +3,7 @@
 \usepackage[brazil]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{enumitem}
+\usepackage{comment}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%% Edit These for yourself
@@ -16,33 +17,142 @@
 
 \centerline{\text{ Linguagem utilizada: Python }}
 
-\section*{Tarefa 1.}
+\section*{Tarefa 1}
 \begin{enumerate}[label=(\alph*)]  %,leftmargin=!,labelindent=5pt]
-    \item O sinal foi carregado a partir do arquivo \emph{signal.txt}. A frequência de amostragem ${f_s = 500 Hz}$ foi utilizada para calcular o tamanho do passo temporal: ${dt = 1/f_s = 0.002}$ segundos . A partir de ${dt}$ e do número de amostras ${N = 1000}$, foi criado um vetor tempo, indo de 0.000 a 19.998 segundos. O sinal no tempo pode ser visto na figura \ref{fig:1}, abaixo.
+    \item Para selecionar devidamente os neurônios, primeiro o arquivo é carregado e em seguida os diferentes vetores são separados: tempo, spikes e força. Então, são detectados os índices únicos de neurônios e selecionados apenas aqueles com índice menor que 100. É feita mais uma seleção para ficar apenas os neurônios com pelo menos 50 {\it spikes} e, então, é feito o sorteio de 10 neurônios.
     
-        \begin{figure}[H]
-            \centering
-            \includegraphics[width=15cm]{TC1/images/Q1_a_sinal_nfilt.png}
-            \caption{Sinal de ECG em função do tempo.}
-            \label{fig:1}
-        \end{figure}
+    %O sinal foi carregado a partir do arquivo \emph{signal.txt}. A frequência de amostragem ${f_s = 500 Hz}$ foi utilizada para calcular o tamanho do passo temporal: ${dt = 1/f_s = 0.002}$ segundos . A partir de ${dt}$ e do número de amostras ${N = 1000}$, foi criado um vetor tempo, indo de 0.000 a 19.998 segundos. O sinal no tempo pode ser visto na figura \ref{fig:1}, abaixo.
+%\begin{comment}
+    \begin{lstlisting}[language=Python][basicstyle=\small]
+from scipy.io import loadmat
+import numpy as np; np.set_printoptions(precision=3)
+import matplotlib.pyplot as plt; plt.ion()
+# Carregar o arquivo
+data = loadmat('../data/tc2ex1.mat')
+
+spikes_all = data['spikes']
+force = data['force']
+force.shape = (max(force.shape),)
+t = data['time']
+t.shape = (max(t.shape),)
+
+# Selecionar os indices menores que 100
+neurons_id_all = np.array(np.unique(spikes_all[:,1]),dtype=int)
+neurons_id_100 = neurons_id_all[neurons_id_all<100]
+
+# Selecionar apenas os neuronios com pelo menos 50 spikes
+good_neurons_id = np.array([i for i in neurons_id_100 if len(spikes_all[spikes_all[:,1]==i])>50])
+
+# Sortear 10 neuronios
+N = 10
+#np.random.seed(1)
+neurons_id = np.random.choice(good_neurons_id,N,replace=False)
+spikes = np.array([spk for spk in spikes_all if int(spk[1]) in neurons_id])
+num_spikes = np.array([len(spikes[spikes[:,1]==i]) for i in neurons_id])
+print(u'Neurônios sorteados:')
+print([n for n in neurons_id])
+print(u'Número de spikes:')
+print([n for n in num_spikes])
+    \end{lstlisting}
+%\end{comment}
+
+\newpage
+    Se usarmos a linha \lstinline{np.random.seed(1)} para reproduzir a condição aleatória, teremos os seguintes neurônios e números de {\it spikes}.
+    
+    Neurônios sorteados:
+    [93, 84, 32, 28, 79, 18, 99, 82, 69, 63]
+
+    Número de spikes:
+    [106, 87, 116, 113, 134, 126, 93, 120, 84, 102]
 
     \item
-    Foi utilizado o comando \lstinline{np.fft.rfft} para obter a FFT do sinal (figura \ref{fig:2}). Outra maneira seria utilizar a FFT complexa (\lstinline{np.fft.fft}) e utilizar a apenas a parte real da resposta. O comando \lstinline{np.fft.rfftfreq} fornece as frequências de amostragem, porém em unidade adimensional. Para calibrar o eixo das abscissas em Hertz foi calculada a resolução espectral como o inverso do tempo se amostragem, isto é, ${df = {1/(dt*N)} = 0.05 Hz}$, e utilizado o número de amostras $N$.
+    As variabilidades da força e dos ISIs foram calculadas a partir do instante ${1000ms}$, descartando o transitório. Abaixo, os valores encontrados para cada métrica.
     
-    $${f_{Hz} = f_{adim}*df*N = {f_{adim} \over {dt*N}} *N = {f_{adim} \over dt}}$$
+    {\it i)} Força média no registro: ${73.62 N}$
+    
+    {\it ii)} Desvio padrão da força no registro: ${5.66 N}$
+    
+    Coef. de variação da força no registro: ${7.69 \%}$
+      
+    {\it iii)} Dados sobre os ISIs:
+    
+        \begin{table}[H]
+        \centering
+        \begin{tabular}{llllll}
+            Neurônio & ISI médio [ms] & ISI ${\sigma}$ [ms] & ISI CV [\%] & Coef. Assim. & Curtose \\ 
+            93 & 94.08 & 18.84 & 20.03 & 1.18 & 1.58 \\
+            84 & 114.29 & 31.04 & 27.16 & 1.04 & 0.86 \\
+            32 & 87.02 & 13.10 & 15.05 & 0.48 & -0.43 \\
+            28 & 87.85 & 13.05 & 14.85 & 1.36 & 4.28 \\
+            79 & 73.75 & 8.48 & 11.50 & 0.34 & -0.14 \\
+            18 & 78.88 & 11.17 & 14.16 & 0.70 & 0.36 \\
+            99 & 105.81 & 25.57 & 24.17 & 1.63 & 3.94 \\
+            82 & 82.96 & 14.61 & 17.61 & 1.39 & 4.51 \\
+            69 & 118.59 & 31.80 & 26.82 & 1.60 & 3.57 \\
+            63 & 98.70 & 23.13 & 23.44 & 1.24 & 2.47 \\
+        \end{tabular}
+        \end{table}
+    
+    Abaixo, os histogramas dos dez neurônios selecionados. Observa-se que todos os neurônios possuem estatísticas de disparo com coeficiente positivo, gerando assimetria para a esquerda, o que pode ser visto na figura. Os disparos dos neurônios 32 e 79 levam a uma distribuição platicúrtica (curtose menor que zero, seguindo a definição de Fisher, como a função utilizada \lstinline{scipy.stats.kurt}), enquanto que os neurônios 28, 69, 82 e 99 apresentaram distribuição dos ISIs muito leptocúrtica, indicando uma maior dispersão quando comparado a uma distribuição normal, além de, também, apresentarem os maiores coeficientes de assimetria.
     
         \begin{figure}[H]
             \centering
-            \includegraphics[width=15cm]{TC1/images/Q1_b_espectro_nfilt.png}
-            \caption{Espectro do sinal de ECG.}
-            \label{fig:2}
+            \includegraphics[width=15cm]{TC2/images/histogramas.png}
+            \caption{Histogramas dos ISIs dos neurônios selecionados.}
+            \label{fig:1}
         \end{figure}
-        
-    \item
-    O espectro possui componentes próximas a 50Hz, possivelmente devido à interferência da rede elétrica do local. São observadas, também, componentes em baixas frequências que podem estar relacionadas à respiração ou outros movimentos do indivíduo durante a aquisição do sinal e componentes em alta frequência, que podem estar relacionadas à detecção de sinais de EMG e ruídos causados pelos fios e pela interface entre a pele e os eletrodos.
+    
+    
+%    Foi utilizado o comando \lstinline{np.fft.rfft} para obter a FFT do sinal (figura \ref{fig:2}). Outra maneira seria utilizar a FFT complexa (\lstinline{np.fft.fft}) e utilizar a apenas a parte real da resposta. O comando \lstinline{np.fft.rfftfreq} fornece as frequências de amostragem, porém em unidade adimensional. Para calibrar o eixo das abscissas em Hertz foi calculada a resolução espectral como o inverso do tempo se amostragem, isto é, ${df = {1/(dt*N)} = 0.05 Hz}$, e utilizado o número de amostras $N$.
+    
+   % $${f_{Hz} = f_{adim}*df*N = {f_{adim} \over {dt*N}} *N = {f_{adim} \over dt}}$$
     
     \item
+    Para estimar as frequências instantâneas de disparo dos neurônios foram criados os vetores de impulsos de mesmo tamanho que o vetor {\it tempo}, com o valor $1/T_s$ (período de amostragem $T_s = 0.05ms$) nos instantes definidos pelos {\it spikes}. Então, foi criada a janela {\it Hanning} de $500/T_s = 10000$ amostras com área unitária, significando ${500 ms}$:
+    
+       \begin{lstlisting}[language=Python][basicstyle=\small]
+window = np.hanning(500/dt)
+window = window/np.trapz(window)
+    \end{lstlisting}
+        
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=15cm]{TC2/images/inst_freqs.png}
+            \caption{Frequências instantâneas estimadas por janelamento do tipo {\it Hanning}.}
+            \label{fig:2}
+        \end{figure}
+    
+    As frequências instantâneas estimadas estão representadas no gráfico abaixo.
+    
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=15cm]{TC2/images/inst_freqs.png}
+            \caption{Frequências instantâneas estimadas por janelamento do tipo {\it Hanning}.}
+            \label{fig:2}
+        \end{figure}
+    
+    \item
+    Foi considerado como estacionário o intervalo entre ${800ms}$ e ${9500ms}$, no qual não há mais efeito transitório.
+    
+    {\it i)} Correlação cruzada entre a força e as frequências estimadas.
+        
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=15cm]{TC2/images/corr_force-freqs.png}
+            \caption{Correlação cruzada: força e frequências estimadas.}
+            \label{fig:3}
+        \end{figure}
+    
+    {\it ii)} Correlação cruzada entre pares de frequências estimadas.
+    
+    Para os pares de frequências estimadas também foi plotada a média de todas as correlações cruzadas entre os pares, a fim de observar o efeito conjunto. 
+        
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=15cm]{TC2/images/corr-freq-freq.png}
+            \caption{Correlação cruzada: pares de frequências estimadas e média.}
+            \label{fig:3}
+        \end{figure}
     
     
 \end{enumerate}
