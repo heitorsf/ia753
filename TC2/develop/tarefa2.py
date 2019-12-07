@@ -32,8 +32,8 @@ Fs = data['Fs'][0][0]
 x = np.array(data['input'])
 y = np.array(data['output'])
 
-fxy,Sxy = csd(x.transpose(),y.transpose(),fs=Fs,scaling='spectrum')
-fxx,Sxx = csd(x.transpose(),x.transpose(),fs=Fs,scaling='spectrum')
+fxy,Sxy = csd(x.transpose(),y.transpose(),fs=Fs,scaling='spectrum',nperseg=100000)
+fxx,Sxx = csd(x.transpose(),x.transpose(),fs=Fs,scaling='spectrum',nperseg=100000)
 H = Sxy[0]/Sxx[0]
 if all(fxy==fxx):
     f = fxx
@@ -42,14 +42,14 @@ else:
 
 fig1,axs = plt.subplots(2,1)
 #plt.xlabel(u'Frequências amostradas [Hz]')
-axs[0].semilogx(f,20*np.log10(np.abs(H)),'.-')
+axs[0].semilogx(f,20*np.log10(np.abs(H)))
 axs[0].set_ylabel(r'$|\hat{H}(jw)|$ [dB]') # Resposta em frequência estimada')
 axs[0].set_xlim(xmax=100)
 axs[0].set_ylim(ymin=-75)
 axs[0].grid(which='both')
 
 #axs[1].semilogx(f,np.angle(H,deg=True),'.-')
-axs[1].semilogx(f,np.concatenate((np.array([np.angle(H[0],deg=True)]),np.rad2deg(np.unwrap(np.angle(H[1:]))))),'.-')
+axs[1].semilogx(f,np.rad2deg(np.unwrap(np.angle(H))))
 axs[1].set_xlabel(u'Frequências amostradas [Hz]')
 axs[1].set_ylabel(r'$\angle{\hat{H}}(jw)$') # Resposta em frequência estimada')
 axs[1].set_xlim(xmax=100)
@@ -63,9 +63,28 @@ plt.savefig('../images/bode_itemb.png')
 # (b)
 print('\n(b)')
 
+wn_ang = np.rad2deg(np.unwrap(np.angle(H)))
+wn_idx = np.argwhere(wn_ang<=-90)[0]
+plt.vlines(2,-300,100,'green')
 #print(u'    Média: %.3f N'%force_avg)
 
 # (c) Estimativa de Frequência instantânea
 print('\n(c)')
+
+wn = 2 #Hz
+w = 2*np.pi*f
+Hwn = 4./(-np.power(w,2) + (0+4j)*w + 4)
+
+plt.figure()
+plt.semilogx(f,np.rad2deg(np.unwrap(np.angle(Hwn))),label='Calculado com wn')
+plt.semilogx(f,np.rad2deg(np.unwrap(np.angle(H))),label='Estimado')
+plt.xlabel(u'Frequências amostradas [Hz]')
+plt.ylabel(r'$\angle{H}(jw)$') # Resposta em frequência estimada')
+plt.xlim(xmax=100)
+plt.ylim((-220,10))
+plt.grid(which='both')
+
+plt.tight_layout()
+plt.savefig('../images/bodec.png')
 
 #print('%d & %.2f & %.2f & %.2f & %.2f & %.2f \\\\'%(neurons_id[i],isis_avg[i],isis_std[i],isis_cv[i],isis_skew[i],isis_kurt[i]))

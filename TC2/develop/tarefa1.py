@@ -180,8 +180,11 @@ plt.xlabel('Lag [ms]')
 plt.ylabel(r'$R_{Force,Freq}}$')
 for i in range(10):
     plt.plot(t_est-t_est.min()-(t_est.max()-t_est.min())/2.,xcorr_force[i])
+plt.grid()
+plt.xlim((-2000,2000))
 plt.savefig('../images/corr_force-freqs.png')
 autocorr_force = correlate(force,force,mode='same')
+
 plt.figure()
 plt.title(u'Correlação cruzada: pares de frequências')
 plt.xlabel('Lag [ms]')
@@ -200,6 +203,7 @@ freqxc_mean = freqxc.sum(axis=0)/N
 
 plt.plot(t_est-t_est.min()-(t_est.max()-t_est.min())/2.,freqxc_mean,'k',linewidth=2)
 plt.tight_layout()
+plt.grid()
 plt.savefig('../images/corr-freq-freq.png')
 
 for i in range(N):
