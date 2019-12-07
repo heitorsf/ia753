@@ -216,7 +216,7 @@ window = window/np.trapz(window)
     Para encontrar $\omega_n$, foi feita a substituição de $s$ por $j\omega$ e, então, de $\omega$ por $\omega_n$.
     
     $$
-    H(s) = {{\omega_n}^2 \over {s^2 + 2\omega s + {\omega_n}^2}     }
+    H(s) = {{\omega_n}^2 \over {s^2 + 2\omega s + {\omega_n}^2}     }  (1)
     $$
     $$
     H(j\omega) = {{\omega_n}^2 \over {(j\omega_n)^2 + 2{\omeg_na}^2  + {\omega_n}^2}     }
@@ -230,7 +230,14 @@ window = window/np.trapz(window)
     
     Indicando uma fase de $-90 graus$. Procurando um deslocamento de fase de -90 graus no diagramad de fase da Figura \ref{fig:bodeb}, obtermos, aproximadamente, $\omega_n = 2Hz$.
     
-    Substituindo 
+    Substituindo o valor encontrado na Equação (1), $\omega_n = 2Hz$, e gerando um $H(j \omega)$, temos novos diagramas de bode, vistos com comparação com o estimado, na Figura \ref{fig:bodec}.
+    
+            \begin{figure}[H]
+            \centering
+            \includegraphics[width=15cm]{TC2/images/bode_c.png}
+            \caption{Diagramas de Bode da resposta em frequência estimada $\hat{H}(jw)$.}
+            \label{fig:bodec}
+        \end{figure}
 
     
 \end{enumerate}
